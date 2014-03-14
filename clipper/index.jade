@@ -39,6 +39,7 @@ html
 
         *This is not the typical login form but it is easier to interact with.*
 
+        ### Request format
         Before submitting a login request, you must collect 2 pieces of information via a `GET` request to `URL`:
 
           - `JSESSIONID`, provided via `Set-Cookie` response header
@@ -73,6 +74,7 @@ html
         }
         ```
 
+        ### Successful login
         Upon successful login, the response will have the format:
 
         **statusCode**: 200
@@ -84,6 +86,7 @@ html
         <partial-response><redirect url="dashboard.jsf"></redirect></partial-response>
         ```
 
+        ### Failed login
         Upon failed login, the response will have the format:
 
         **statusCode**: 200
@@ -102,6 +105,8 @@ html
 
         **URL**: https://www.clippercard.com/ClipperCard/dashboard.jsf
 
+        ### Request format
+
         When requesting the page via `GET`, you must still provide `JSESSIONID` via a `Cookie` header.
 
         ```js
@@ -115,14 +120,16 @@ html
         }
         ```
 
-        Expected response:
+        ### Response format
+        **Expected response**:
 
         ```html
         <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
         <html xmlns="http://www.w3.org/1999/xhtml"><head><script id="f5_cspm">(functio...
         ```
 
-        This has not been fully researched but it looks like the format of desired content is:
+        ### Content of interest
+        This has not been fully researched but it looks like the format of interesting content is:
 
         ```html
         <div class="infoDiv">
@@ -132,3 +139,13 @@ html
         ```
 
         To scrape, you should search for an HTML element containing `Name on Account:`. Then, look at its sibling element with the `fieldData` class for its content.
+
+      hr
+
+      .text-center
+        :markdown
+          Created by [Todd Wolfson][] on [GitHub][] under the [UNLICENSE][]
+
+          [Todd Wolfson]: http://twolfson.com/
+          [GitHub]: https://github.com/twolfson/undocumented.io
+          [UNLICENSE]: https://github.com/twolfson/undocumented.io/blob/ac37222907ba264bf52517045e117cde22e7c061/UNLICENSE
