@@ -64,11 +64,47 @@ html
 
         Then, I took that and slapped it into a `node.js` script. Unfortunately, I realized that I was requesting for something that I did not want.
 
+        https://gist.github.com/twolfson/9543183/f9c66630353a4d05e805458fbf241a25e900b05c
+
         ### Change of plans
         I went back to [anthonywu/clippercard][] and attempted to reproduce his actions via `curl`. Unfortunately, the results turned up dead.
 
         ![clippercard screenshot](research/clippercard-curl.png)
 
-        I marked this as a dead end and went for the heavy weaponry, [Charles Proxy][].
+        I marked this as a dead-end and went for the heavy weaponry, [Charles Proxy][].
 
         [Charles Proxy]: http://charlesproxy.com/
+
+        ![Charles Proxy screenshot](research/charles-proxy.png)
+
+        I set up Charles Proxy to intercept all `POST` traffic to/from `www.clippercard.com` and ask me what I wanted to do with it.
+
+        This was done via Charles' breakpoints feature and SSL proxying.
+
+        ![Charles SSL proxying](research/charles-ssl-proxy.png)
+
+        ![Charles breakpoints](research/charles-breakpoints.png)
+
+        Then, I navigate to our login page again, https://www.clippercard.com/ClipperWeb/index.do
+
+        When Charles is proxying SSL, you must accept SSL certificates. I did that.
+
+        ![Accepting Charles Proxy SSL certificate](research/firefox-accept-ssl-certs.png)
+
+        Unfortunately, the home page was slowing down due to proxying so I started fiddling with URLs. I wound up landing on https://www.clippercard.com/ClipperCard/needLogin.jsf
+
+        This page was a blessing in disguise as the form fields were simpler (e.g. did not have `_14` on the end which could be random).
+
+        ![needLogin page](research/needlogin-form.png)
+
+        I attempted to log in once via this page. Success!
+
+        I logged out and logged in again from it. This time, I aborted the request and transferred it into `curl`. I witnessed that I could re-request this request infinite times.
+
+        Using that, I trimmed the fat on the request until it returning the `redirect` content.
+
+        Then, I transferred to my `node` script. Ditched the hardcoded username/password and started scraping the GET version of the page for dynamic values.
+
+        Eventually, I deduced the necessary components and called it a day.
+
+        https://gist.github.com/twolfson/9543183/bf41d36d648ef08c0cfecc68994d2d0838641e74
