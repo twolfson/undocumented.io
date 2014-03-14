@@ -75,3 +75,26 @@ html
         }
         ```
 
+        Upon successful login, the response will have the format:
+
+        **statusCode**: 200
+
+        **body**:
+
+        ```xml
+        <?xml version='1.0' encoding='UTF-8'?>
+        <partial-response><redirect url="dashboard.jsf"></redirect></partial-response>
+        ```
+
+        Upon failed login, the response will have the format:
+
+        **statusCode**: 200
+
+        **body**:
+
+        ```xml
+        <?xml version='1.0' encoding='utf-8'?>
+        <partial-response><changes><update id="javax.faces.ViewState"><![CDATA[-1756984431596234131:-7595703900306249159]]></update></changes></partial-response>
+        ```
+
+        *The numbers above will be dynamic (They can also be both positive and negative).*
