@@ -1,0 +1,65 @@
+<!DOCTYPE html><html><head><title>undocumented.io</title><link rel="stylesheet" href="https://rawgithub.com/twbs/bootstrap/v3.1.1/dist/css/bootstrap.min.css"><style>blockquote {
+  font-size: inherit;
+  line-height: inherit;
+}
+
+img {
+  max-width: 100%;
+}</style></head><body><div class="container"><h1 class="text-center">Clipper API</h1><h2 class="text-center">Research (up to dashboard)</h2><h3 id="research-existing-solutions">Research existing solutions</h3>
+<p>I started by looking for existing GitHub solutions to see if I can gain knowledge from their implementations.</p>
+<p><a href="https://www.google.com/search?q=clipper+card+api">https://www.google.com/search?q=clipper+card+api</a></p>
+<p>Two were found:</p>
+<ul>
+<li><a href="https://github.com/anthonywu/clippercard">anthonywu/clippercard</a>, a Python package from 1 year ago</li>
+</ul>
+<ul>
+<li><a href="http://jake.ch/2012/10/20/checkclip/">Check Clip</a>, an API and Alfred extension that have been taken down</li>
+</ul>
+<h3 id="cold-start">Cold start</h3>
+<p>I skimmed through <a href="https://github.com/anthonywu/clippercard">anthonywu/clippercard</a> but decided to start cold anyway. I navigated to <a href="https://www.clippercard.com/ClipperWeb/index.do">https://www.clippercard.com/ClipperWeb/index.do</a>, opened Firebug, and set Network tab to persist data.</p>
+<blockquote>
+<p><code>Persist</code> allows me to review network traffic from previous pages after navigating to another page.</p>
+</blockquote>
+<p><img src="research/persist.png" alt="Persist screenshot"></p>
+<p>Next, I filled out the login form and proceed to the next page.</p>
+<p><img src="research/login-form.png" alt="Login form screenshot"></p>
+<p>The request was captured and contained the following information</p>
+<p><img src="research/login-request-headers.png" alt="Login request headers screenshot">
+<img src="research/login-request-post.png" alt="Login request post screenshot">
+<img src="research/login-request-response.png" alt="Login request response screenshot"></p>
+<p>Next, I took copied the request to its <code>curl</code> equivalent via Firebug&#39;s <code>Copy Request as cURL</code></p>
+<p><img src="research/login-copy-as-curl.png" alt="Copy as cURL screenshot"></p>
+<p>Unfortunately, this yielded an undesired <code>sessionExpired</code> result</p>
+<p><img src="research/login-curl.png" alt="Login curl screenshot"></p>
+<p>I decided to start removing parameters until it stopped replying with the <code>sessionExpired</code> response.</p>
+<p>Then, I took that and slapped it into a <code>node.js</code> script. Unfortunately, I realized that I was requesting for something that I did not want.</p>
+<p><a href="https://gist.github.com/twolfson/9543183/f9c66630353a4d05e805458fbf241a25e900b05c">https://gist.github.com/twolfson/9543183/f9c66630353a4d05e805458fbf241a25e900b05c</a></p>
+<h3 id="change-of-plans">Change of plans</h3>
+<p>I went back to <a href="https://github.com/anthonywu/clippercard">anthonywu/clippercard</a> and attempted to reproduce his actions via <code>curl</code>. Unfortunately, the results turned up dead.</p>
+<p><img src="research/clippercard-curl.png" alt="clippercard screenshot"></p>
+<p>I marked this as a dead-end and went for the heavy weaponry, <a href="http://charlesproxy.com/">Charles Proxy</a>.</p>
+<p><img src="research/charles-proxy.png" alt="Charles Proxy screenshot"></p>
+<p>I set up Charles Proxy to intercept all <code>POST</code> traffic to/from <code>www.clippercard.com</code> and ask me what I wanted to do with it.</p>
+<p>This was done via Charles&#39; breakpoints feature and SSL proxying.</p>
+<p><img src="research/charles-ssl-proxy.png" alt="Charles SSL proxying"></p>
+<p><img src="research/charles-breakpoints.png" alt="Charles breakpoints"></p>
+<p>Then, I navigate to our login page again, <a href="https://www.clippercard.com/ClipperWeb/index.do">https://www.clippercard.com/ClipperWeb/index.do</a></p>
+<p>When Charles is proxying SSL, you must accept SSL certificates. I did that.</p>
+<p><img src="research/firefox-accept-ssl-certs.png" alt="Accepting Charles Proxy SSL certificate"></p>
+<p>Unfortunately, the home page was slowing down due to proxying so I started fiddling with URLs. I wound up landing on <a href="https://www.clippercard.com/ClipperCard/needLogin.jsf">https://www.clippercard.com/ClipperCard/needLogin.jsf</a></p>
+<p>This page was a blessing in disguise as the form fields were simpler (e.g. did not have <code>_14</code> on the end which could be random).</p>
+<p><img src="research/needlogin-form.png" alt="needLogin page"></p>
+<p>I attempted to log in once via this page. Success!</p>
+<p>I logged out and logged in again from it. This time, I aborted the request and transferred it into <code>curl</code>. I witnessed that I could re-request this request infinite times.</p>
+<p><img src="research/needlogin-breakpoint.png" alt="needLogin breakpoint">
+<img src="research/needlogin-raw.png" alt="needLogin raw request">
+<img src="research/needlogin-curl.png" alt="needLogin raw curl"></p>
+<p>Using that, I trimmed request parameters (cookie, form, and header) until it returning the <code>redirect</code> content.</p>
+<p><img src="research/needlogin-curl-trimmed.png" alt="needLogin curl trimmed"></p>
+<p>Then, I transferred to my <code>node</code> script.</p>
+<p><a href="https://gist.github.com/twolfson/9543183/9c22c76ac6239caf30efefac99d240e31cd65ea2">https://gist.github.com/twolfson/9543183/9c22c76ac6239caf30efefac99d240e31cd65ea2</a></p>
+<p>I removed the hardcoded <code>JSESSIONID/ViewState</code> and started scraping the GET version of the page for dynamic values/using a cookie jar to collect cookie values.</p>
+<p><a href="https://gist.github.com/twolfson/9543183/85eaa5be1bde5428f9428ccd61539b7432889063">https://gist.github.com/twolfson/9543183/85eaa5be1bde5428f9428ccd61539b7432889063</a></p>
+<p>Eventually, I deduced the necessary components and called it a day.</p>
+<p><a href="https://gist.github.com/twolfson/9543183/bf41d36d648ef08c0cfecc68994d2d0838641e74">https://gist.github.com/twolfson/9543183/bf41d36d648ef08c0cfecc68994d2d0838641e74</a></p>
+</div></body></html>

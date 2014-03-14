@@ -1,0 +1,97 @@
+<!DOCTYPE html><html><head><title>undocumented.io</title><link rel="stylesheet" href="https://rawgithub.com/twbs/bootstrap/v3.1.1/dist/css/bootstrap.min.css"><style>blockquote {
+  font-size: inherit;
+  line-height: inherit;
+}
+
+img {
+  max-width: 100%;
+}</style></head><body><div class="container"><h1 class="text-center">Clipper API</h1><p><strong>Resource</strong>: <a href="http://clippercard.com/">http://clippercard.com/</a></p>
+<p><strong>Method</strong>: Firebug, Charles Proxy</p>
+<p><strong>Research</strong>: <a href="research.html">research.html</a></p>
+<h2 id="general-information">General information</h2>
+<p>A <code>JSESSIONID</code> cookie handles your session data and maintains state. Rendering involves <a href="http://docs.oracle.com/javaee/6/api/javax/faces/package-summary.html">javax.faces</a> which means that any form submission must various <code>javax.faces.*</code> fields in its form submission. <code>javax.faces.ViewState</code> is dynamic and effectively acts as a CSRF token.</p>
+<blockquote>
+<p>This has been written with no knowledge of <code>javax.faces</code> internals. If you know anything internally about it, please contribute.</p>
+</blockquote>
+<h2 id="login">Login</h2>
+<p>This is how authenticate with the web application.</p>
+<p><strong>URL</strong>: <a href="https://www.clippercard.com/ClipperCard/needLogin.jsf">https://www.clippercard.com/ClipperCard/needLogin.jsf</a></p>
+<p><em>This is not the typical login form but it is easier to interact with.</em></p>
+<h3 id="request-format">Request format</h3>
+<p>Before submitting a login request, you must collect 2 pieces of information via a <code>GET</code> request to <code>URL</code>:</p>
+<ul>
+<li><code>JSESSIONID</code>, provided via <code>Set-Cookie</code> response header<ul>
+<li>Feel free to maintain cookies via a cookie jar that is shared across requests</li>
+<li>This is documented in case you want to provide <code>Cookie</code> headers manually</li>
+</ul>
+</li>
+<li><code>javax.faces.ViewState</code>, in the response HTML, there is an element with <code>id=&quot;javax.faces.ViewState&quot;</code>. You must retrieve its value.</li>
+</ul>
+<p>To login, make a <code>POST</code> request with the following format:</p>
+<pre><code class="lang-js">request: {
+  method: &#39;POST&#39;,
+  url: &#39;https://www.clippercard.com/ClipperCard/needLogin.jsf&#39;,
+  headers: {
+    Cookie: &#39;JSESSIONID=&#39; + JSESSIONID,
+    &#39;Faces-Request&#39;: &#39;partial/ajax&#39;,
+    &#39;User-Agent&#39;: &#39;Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:25.0) Gecko/20100101 Firefox/25.0&#39;
+  },
+  // These form elements serialize into `mainForm=mainForm&amp;mainForm%3AoUserName=todd%40twolfson.com&amp;...`
+  form: {
+    mainForm: &#39;mainForm&#39;,
+    &#39;mainForm:oUserName&#39;: USERNAME,
+    &#39;mainForm:oPassword&#39;: PASSWORD,
+    &#39;javax.faces.ViewState&#39;: VIEW_STATE,
+    &#39;javax.faces.source&#39;: &#39;mainForm:orderCardLogin&#39;,
+    &#39;javax.faces.partial.event&#39;: &#39;click&#39;,
+    &#39;javax.faces.partial.execute&#39;: &#39;mainForm:orderCardLogin mainForm:loginComp&#39;,
+    &#39;javax.faces.partial.render&#39;: &#39;mainForm:loginComp&#39;,
+    &#39;javax.faces.behavior.event&#39;: &#39;action&#39;,
+    &#39;javax.faces.partial.ajax&#39;: &#39;true&#39;
+  }
+}
+</code></pre>
+<h3 id="successful-login">Successful login</h3>
+<p>Upon successful login, the response will have the format:</p>
+<p><strong>statusCode</strong>: 200</p>
+<p><strong>body</strong>:</p>
+<pre><code class="lang-xml">&lt;?xml version=&#39;1.0&#39; encoding=&#39;UTF-8&#39;?&gt;
+&lt;partial-response&gt;&lt;redirect url=&quot;dashboard.jsf&quot;&gt;&lt;/redirect&gt;&lt;/partial-response&gt;
+</code></pre>
+<h3 id="failed-login">Failed login</h3>
+<p>Upon failed login, the response will have the format:</p>
+<p><strong>statusCode</strong>: 200</p>
+<p><strong>body</strong>:</p>
+<pre><code class="lang-xml">&lt;?xml version=&#39;1.0&#39; encoding=&#39;utf-8&#39;?&gt;
+&lt;partial-response&gt;&lt;changes&gt;&lt;update id=&quot;javax.faces.ViewState&quot;&gt;&lt;![CDATA[-1756984431596234131:-7595703900306249159]]&gt;&lt;/update&gt;&lt;/changes&gt;&lt;/partial-response&gt;
+</code></pre>
+<p><em>The numbers above will be dynamic (They can also be both positive and negative).</em></p>
+<h2 id="account-information">Account information</h2>
+<p>Once you are logged in, you can collect account information by scraping data from the dashboard.</p>
+<p><strong>URL</strong>: <a href="https://www.clippercard.com/ClipperCard/dashboard.jsf">https://www.clippercard.com/ClipperCard/dashboard.jsf</a></p>
+<h3 id="request-format">Request format</h3>
+<p>When requesting the page via <code>GET</code>, you must still provide <code>JSESSIONID</code> via a <code>Cookie</code> header.</p>
+<pre><code class="lang-js">request: {
+  method: &#39;GET&#39;,
+  url: &#39;https://www.clippercard.com/ClipperCard/dashboard.jsf&#39;,
+  headers: {
+    Cookie: &#39;JSESSIONID=&#39; + JSESSIONID,
+    &#39;User-Agent&#39;: &#39;Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:25.0) Gecko/20100101 Firefox/25.0&#39;
+  }
+}
+</code></pre>
+<h3 id="response-format">Response format</h3>
+<p><strong>Expected response</strong>:</p>
+<pre><code class="lang-html">&lt;!DOCTYPE html PUBLIC &quot;-//W3C//DTD XHTML 1.0 Transitional//EN&quot; &quot;http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd&quot;&gt;
+&lt;html xmlns=&quot;http://www.w3.org/1999/xhtml&quot;&gt;&lt;head&gt;&lt;script id=&quot;f5_cspm&quot;&gt;(functio...
+</code></pre>
+<h3 id="content-of-interest">Content of interest</h3>
+<p>This has not been fully researched but it looks like the format of interesting content is:</p>
+<pre><code class="lang-html">&lt;div class=&quot;infoDiv&quot;&gt;
+  &lt;div class=&quot;fieldName&quot;&gt;Name on Account:&lt;/div&gt;
+  &lt;div class=&quot;fieldData&quot;&gt;Mr. Todd Wolfson&lt;/div&gt;
+&lt;/div&gt;
+</code></pre>
+<p>To scrape, you should search for an HTML element containing <code>Name on Account:</code>. Then, look at its sibling element with the <code>fieldData</code> class for its content.</p>
+<hr><div class="text-center"><p>Created by <a href="http://twolfson.com/">Todd Wolfson</a> on <a href="https://github.com/twolfson/undocumented.io">GitHub</a> under the <a href="https://github.com/twolfson/undocumented.io/blob/ac37222907ba264bf52517045e117cde22e7c061/UNLICENSE">UNLICENSE</a></p>
+</div></div></body></html>
