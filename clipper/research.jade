@@ -5,7 +5,31 @@ html
     title undocumented.io
     //- TODO: Stop hotlinking this
     link(rel="stylesheet",href="https://rawgithub.com/twbs/bootstrap/v3.1.1/dist/css/bootstrap.min.css")
+    style.
+      blockquote {
+        font-size: inherit;
+        line-height: inherit;
+      }
   body
     div.container
       h1.text-center Clipper API
       h2.text-center Research (up to dashboard)
+
+      :markdown
+        I started by looking for existing GitHub solutions to see if I can gain knowledge from their implementations.
+
+        https://www.google.com/search?q=clipper+card+api
+
+        Two were found:
+
+        - [anthonywu/clippercard][], a Python package from 1 year ago
+
+        [anthonywu/clippercard]: https://github.com/anthonywu/clippercard
+
+        - [Check Clip][], an API and Alfred extension that have been taken down
+
+        [Check Clip]: http://jake.ch/2012/10/20/checkclip/
+
+        I skimmed through [anthonywu/clippercard][] but decided to start cold anyway. I navigated to https://www.clippercard.com/ClipperWeb/index.do, opened Firebug, and set Network tab to persist data.
+
+        > `Persist` allows me to review network traffic from previous pages after navigating to another page.
