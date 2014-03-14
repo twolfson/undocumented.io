@@ -101,9 +101,21 @@ html
 
         I logged out and logged in again from it. This time, I aborted the request and transferred it into `curl`. I witnessed that I could re-request this request infinite times.
 
-        Using that, I trimmed the fat on the request until it returning the `redirect` content.
+        ![needLogin breakpoint](research/needlogin-breakpoint.png)
+        ![needLogin raw request](research/needlogin-raw.png)
+        ![needLogin raw curl](research/needlogin-curl.png)
 
-        Then, I transferred to my `node` script. Ditched the hardcoded username/password and started scraping the GET version of the page for dynamic values.
+        Using that, I trimmed request parameters (cookie, form, and header) until it returning the `redirect` content.
+
+        ![needLogin curl trimmed](research/needlogin-curl-trimmed.png)
+
+        Then, I transferred to my `node` script.
+
+        https://gist.github.com/twolfson/9543183/9c22c76ac6239caf30efefac99d240e31cd65ea2
+
+        I removed the hardcoded `JSESSIONID/ViewState` and started scraping the GET version of the page for dynamic values/using a cookie jar to collect cookie values.
+
+        https://gist.github.com/twolfson/9543183/85eaa5be1bde5428f9428ccd61539b7432889063
 
         Eventually, I deduced the necessary components and called it a day.
 
