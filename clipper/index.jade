@@ -98,3 +98,20 @@ html
         ```
 
         *The numbers above will be dynamic (They can also be both positive and negative).*
+
+        ## Account information
+        Once you are logged in, you can collect account information by scraping data from the dashboard.
+
+        **URL**: https://www.clippercard.com/ClipperCard/dashboard.jsf
+
+        This has not been fully researched but it looks like the format is:
+
+        ```html
+        <div class="infoDiv">
+          <div class="fieldName">Name on Account:</div>
+          <div class="fieldData">Mr. Todd Wolfson</div>
+        </div>
+        ```
+
+        To scrape, you should search for an HTML element containing `Name on Account:`. Then, look at its sibling element with the `fieldData` class for its content.
+
