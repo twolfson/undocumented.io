@@ -5,6 +5,15 @@ html
     title undocumented.io
     //- TODO: Stop hotlinking this
     link(rel="stylesheet",href="https://rawgithub.com/twbs/bootstrap/v3.1.1/dist/css/bootstrap.min.css")
+    style.
+      blockquote {
+        font-size: inherit;
+        line-height: inherit;
+      }
+
+      img {
+        max-width: 100%;
+      }
   body
     div.container
       h1.text-center Clipper API
@@ -15,4 +24,54 @@ html
         **Method**: Firebug, Charles Proxy
 
         **Research**: [research.html](research.html)
+
+        ## General information
+        A `JSESSIONID` cookie handles your session data and maintains state. Rendering involves [javax.faces][] which means that any form submission must various `javax.faces.*` fields in its form submission. `javax.faces.ViewState` is dynamic and effectively acts as a CSRF token.
+
+        [javax.faces]: http://docs.oracle.com/javaee/6/api/javax/faces/package-summary.html
+
+        > This has been written with no knowledge of `javax.faces` internals. If you know anything internally about it, please contribute.
+
+        ## Login
+        This is how authenticate with the web application.
+
+        **URL**: https://www.clippercard.com/ClipperCard/needLogin.jsf
+
+        *This is not the typical login form but it is easier to interact with.*
+
+        Before submitting a login request, you must collect 2 pieces of information via a `GET` request to `URL`:
+
+          - `JSESSIONID`, provided via `Set-Cookie` response header
+              - Feel free to maintain cookies via a cookie jar that is shared across requests
+              - This is documented in case you want to provide `Cookie` headers manually
+          - `javax.faces.ViewState`, in the response HTML, there is an element with `id="javax.faces.ViewState"`. You must retrieve its value.
+
+        To login, make a `POST` request with the following format:
+
+        ```js
+        request: {
+          url: {
+            method: 'POST',
+            url: 'https://www.clippercard.com/ClipperCard/needLogin.jsf',
+            headers: {
+              Cookie: 'JSESSIONID=' + JSESSIONID,
+              'Faces-Request': 'partial/ajax',
+              'User-Agent': 'Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:25.0) Gecko/20100101 Firefox/25.0'
+            },
+            // These form elements serialize into `mainForm=mainForm&mainForm%3AoUserName=todd%40twolfson.com&...`
+            form: {
+              mainForm: 'mainForm',
+              'mainForm:oUserName': USERNAME,
+              'mainForm:oPassword': PASSWORD,
+              'javax.faces.ViewState': VIEW_STATE,
+              'javax.faces.source': 'mainForm=orderCardLogin',
+              'javax.faces.partial.event': 'click',
+              'javax.faces.partial.execute': 'mainForm=orderCardLogin mainForm=loginComp',
+              'javax.faces.partial.render': 'mainForm=loginComp',
+              'javax.faces.behavior.event': 'action',
+              'javax.faces.partial.ajax': 'true'
+            }
+          }
+        }
+        ```
 
