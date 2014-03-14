@@ -24,7 +24,11 @@
   "engines": {
     "node": ">= 0.8.0"
   },
-  "scripts": {},
-  "dependencies": {},
-  "devDependencies": {},
+  "scripts": {
+    "start": "serve"
+  },
+  "dependencies": {
+    "serve": "~1.4.0"
+  },
+  "devDependencies": {}
 }
