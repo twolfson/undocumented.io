@@ -25,7 +25,8 @@
     "node": ">= 0.8.0"
   },
   "scripts": {
-    "start": "serve"
+    "start": "serve",
+    "build": "jade --pretty *.jade clipper/*.jade"
   },
   "dependencies": {
     "serve": "~1.4.0",
