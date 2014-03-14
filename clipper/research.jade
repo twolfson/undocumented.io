@@ -10,12 +10,17 @@ html
         font-size: inherit;
         line-height: inherit;
       }
+
+      img {
+        max-width: 100%;
+      }
   body
     div.container
       h1.text-center Clipper API
       h2.text-center Research (up to dashboard)
 
       :markdown
+        ### Research existing solutions
         I started by looking for existing GitHub solutions to see if I can gain knowledge from their implementations.
 
         https://www.google.com/search?q=clipper+card+api
@@ -30,6 +35,40 @@ html
 
         [Check Clip]: http://jake.ch/2012/10/20/checkclip/
 
+        ### Cold start
         I skimmed through [anthonywu/clippercard][] but decided to start cold anyway. I navigated to https://www.clippercard.com/ClipperWeb/index.do, opened Firebug, and set Network tab to persist data.
 
         > `Persist` allows me to review network traffic from previous pages after navigating to another page.
+
+        ![Persist screenshot](research/persist.png)
+
+        Next, I filled out the login form and proceed to the next page.
+
+        ![Login form screenshot](research/login-form.png)
+
+        The request was captured and contained the following information
+
+        ![Login request headers screenshot](research/login-request-headers.png)
+        ![Login request post screenshot](research/login-request-post.png)
+        ![Login request response screenshot](research/login-request-response.png)
+
+        Next, I took copied the request to its `curl` equivalent via Firebug's `Copy Request as cURL`
+
+        ![Copy as cURL screenshot](research/login-copy-as-curl.png)
+
+        Unfortunately, this yielded an undesired `sessionExpired` result
+
+        ![Login curl screenshot](research/login-curl.png)
+
+        I decided to start removing parameters until it stopped replying with the `sessionExpired` response.
+
+        Then, I took that and slapped it into a `node.js` script. Unfortunately, I realized that I was requesting for something that I did not want.
+
+        ### Change of plans
+        I went back to [anthonywu/clippercard][] and attempted to reproduce his actions via `curl`. Unfortunately, the results turned up dead.
+
+        ![clippercard screenshot](research/clippercard-curl.png)
+
+        I marked this as a dead end and went for the heavy weaponry, [Charles Proxy][].
+
+        [Charles Proxy]: http://charlesproxy.com/
