@@ -28,7 +28,8 @@
     "start": "serve"
   },
   "dependencies": {
-    "serve": "~1.4.0"
+    "serve": "~1.4.0",
+    "marked": "~0.3.2"
   },
   "devDependencies": {}
 }
