@@ -29,9 +29,9 @@
     "build": "jade --pretty *.jade clipper/*.jade"
   },
   "dependencies": {
-    "serve": "~1.4.0",
+    "jade": "~1.3.0",
     "marked": "~0.3.2",
-    "jade": "~1.3.0"
+    "serve": "~9.3.0"
   },
   "devDependencies": {}
 }
